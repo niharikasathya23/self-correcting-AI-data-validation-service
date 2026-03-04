@@ -1,0 +1,27 @@
+# Self-Correcting Data Validation Agent
+
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Database
+*.db
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db

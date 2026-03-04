@@ -1,0 +1,187 @@
+{
+  "summary": {
+    "total_samples": 10,
+    "passed_samples": 9,
+    "pass_at_1": 0.4,
+    "pass_at_3": 0.9,
+    "field_accuracy": 0.9864864864864865,
+    "avg_retries": 0.6,
+    "avg_latency_ms": 10943.110299110413
+  },
+  "results": [
+    {
+      "sample_id": "invoice_002",
+      "schema_name": "invoice",
+      "passed": true,
+      "retries_used": 1,
+      "field_results": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "vendor_name": true,
+        "customer_name": true,
+        "subtotal": true,
+        "tax_rate": true,
+        "tax_amount": true,
+        "total_amount": true
+      },
+      "error": null,
+      "latency_ms": 9141.422986984253
+    },
+    {
+      "sample_id": "invoice_005",
+      "schema_name": "invoice",
+      "passed": false,
+      "retries_used": 1,
+      "field_results": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "vendor_name": true,
+        "customer_name": false,
+        "subtotal": true,
+        "tax_rate": true,
+        "tax_amount": true,
+        "total_amount": true
+      },
+      "error": null,
+      "latency_ms": 11172.37901687622
+    },
+    {
+      "sample_id": "survey_002",
+      "schema_name": "survey",
+      "passed": true,
+      "retries_used": 0,
+      "field_results": {
+        "respondent_name": true,
+        "respondent_email": true,
+        "submission_date": true,
+        "overall_score": true
+      },
+      "error": null,
+      "latency_ms": 5081.916809082031
+    },
+    {
+      "sample_id": "invoice_001",
+      "schema_name": "invoice",
+      "passed": true,
+      "retries_used": 0,
+      "field_results": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "vendor_name": true,
+        "customer_name": true,
+        "subtotal": true,
+        "tax_rate": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "currency": true
+      },
+      "error": null,
+      "latency_ms": 17251.653909683228
+    },
+    {
+      "sample_id": "invoice_006",
+      "schema_name": "invoice",
+      "passed": true,
+      "retries_used": 1,
+      "field_results": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "vendor_name": true,
+        "customer_name": true,
+        "subtotal": true,
+        "tax_rate": true,
+        "tax_amount": true,
+        "total_amount": true
+      },
+      "error": null,
+      "latency_ms": 13153.885126113892
+    },
+    {
+      "sample_id": "invoice_003",
+      "schema_name": "invoice",
+      "passed": true,
+      "retries_used": 1,
+      "field_results": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "vendor_name": true,
+        "customer_name": true,
+        "subtotal": true,
+        "tax_rate": true,
+        "tax_amount": true,
+        "total_amount": true
+      },
+      "error": null,
+      "latency_ms": 15166.621208190918
+    },
+    {
+      "sample_id": "survey_001",
+      "schema_name": "survey",
+      "passed": true,
+      "retries_used": 0,
+      "field_results": {
+        "respondent_name": true,
+        "respondent_email": true,
+        "submission_date": true,
+        "overall_score": true
+      },
+      "error": null,
+      "latency_ms": 8102.849006652832
+    },
+    {
+      "sample_id": "invoice_004",
+      "schema_name": "invoice",
+      "passed": true,
+      "retries_used": 1,
+      "field_results": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "vendor_name": true,
+        "customer_name": true,
+        "subtotal": true,
+        "tax_rate": true,
+        "tax_amount": true,
+        "total_amount": true
+      },
+      "error": null,
+      "latency_ms": 15178.508996963501
+    },
+    {
+      "sample_id": "survey_003",
+      "schema_name": "survey",
+      "passed": true,
+      "retries_used": 0,
+      "field_results": {
+        "respondent_name": true,
+        "respondent_email": true,
+        "submission_date": true,
+        "overall_score": true
+      },
+      "error": null,
+      "latency_ms": 6079.774856567383
+    },
+    {
+      "sample_id": "invoice_007",
+      "schema_name": "invoice",
+      "passed": true,
+      "retries_used": 1,
+      "field_results": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "vendor_name": true,
+        "customer_name": true,
+        "subtotal": true,
+        "tax_rate": true,
+        "tax_amount": true,
+        "total_amount": true
+      },
+      "error": null,
+      "latency_ms": 9102.091073989868
+    }
+  ]
+}

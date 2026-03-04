@@ -1,0 +1,35 @@
+[
+  {
+    "id": "invoice_001",
+    "schema_name": "invoice",
+    "raw_text": "Invoice #1042 from Acme Corp dated 2024-03-15. Billed to Jane Smith at jane@example.com. Items: 2x Widget A at $25.00 each ($50.00), 1x Widget B at $75.00 ($75.00). Subtotal $125.00, tax 10% ($12.50), total $137.50. Payment due by 2024-04-15. Notes: Rush delivery requested.",
+    "expected": {
+      "invoice_number": "1042",
+      "invoice_date": "2024-03-15",
+      "due_date": "2024-04-15",
+      "vendor_name": "Acme Corp",
+      "customer_name": "Jane Smith",
+      "subtotal": 125.0,
+      "tax_rate": 0.1,
+      "tax_amount": 12.5,
+      "total_amount": 137.5,
+      "currency": "USD"
+    }
+  },
+  {
+    "id": "invoice_002",
+    "schema_name": "invoice",
+    "raw_text": "Invoice No. 2023-0891 | TechSupplies Inc | Date: January 5, 2024 | Customer: Bob Wilson, bob.wilson@company.org | 5 units of USB-C Cable @ $12.99 = $64.95 | 3 units of HDMI Adapter @ $24.50 = $73.50 | Subtotal: $138.45 | Tax (8.5%): $11.77 | Total Due: $150.22 | Due Date: Feb 5, 2024",
+    "expected": {
+      "invoice_number": "2023-0891",
+      "invoice_date": "2024-01-05",
+      "due_date": "2024-02-05",
+      "vendor_name": "TechSupplies Inc",
+      "customer_name": "Bob Wilson",
+      "subtotal": 138.45,
+      "tax_rate": 0.085,
+      "tax_amount": 11.77,
+      "total_amount": 150.22
+    }
+  }
+]

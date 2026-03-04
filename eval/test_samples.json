@@ -1,0 +1,146 @@
+[
+  {
+    "id": "invoice_001",
+    "schema_name": "invoice",
+    "raw_text": "Invoice #1042 from Acme Corp dated 2024-03-15. Billed to Jane Smith at jane@example.com. Items: 2x Widget A at $25.00 each ($50.00), 1x Widget B at $75.00 ($75.00). Subtotal $125.00, tax 10% ($12.50), total $137.50. Payment due by 2024-04-15. Notes: Rush delivery requested.",
+    "expected": {
+      "invoice_number": "1042",
+      "invoice_date": "2024-03-15",
+      "due_date": "2024-04-15",
+      "vendor_name": "Acme Corp",
+      "customer_name": "Jane Smith",
+      "subtotal": 125.0,
+      "tax_rate": 0.1,
+      "tax_amount": 12.5,
+      "total_amount": 137.5,
+      "currency": "USD"
+    }
+  },
+  {
+    "id": "invoice_002",
+    "schema_name": "invoice",
+    "raw_text": "Invoice No. 2023-0891 | TechSupplies Inc | Date: January 5, 2024 | Customer: Bob Wilson, bob.wilson@company.org | 5 units of USB-C Cable @ $12.99 = $64.95 | 3 units of HDMI Adapter @ $24.50 = $73.50 | Subtotal: $138.45 | Tax (8.5%): $11.77 | Total Due: $150.22 | Due Date: Feb 5, 2024",
+    "expected": {
+      "invoice_number": "2023-0891",
+      "invoice_date": "2024-01-05",
+      "due_date": "2024-02-05",
+      "vendor_name": "TechSupplies Inc",
+      "customer_name": "Bob Wilson",
+      "subtotal": 138.45,
+      "tax_rate": 0.085,
+      "tax_amount": 11.77,
+      "total_amount": 150.22
+    }
+  },
+  {
+    "id": "invoice_003",
+    "schema_name": "invoice",
+    "raw_text": "INVOICE from CloudServices LLC. Invoice #CS-00456, issued December 20, 2023. Bill to: Sarah Johnson. Services: Monthly hosting ($99.00), Domain renewal ($15.00), SSL Certificate ($49.00). Subtotal $163.00. No tax applied. Grand total $163.00. Please pay by Jan 20, 2024.",
+    "expected": {
+      "invoice_number": "CS-00456",
+      "invoice_date": "2023-12-20",
+      "due_date": "2024-01-20",
+      "vendor_name": "CloudServices LLC",
+      "customer_name": "Sarah Johnson",
+      "subtotal": 163.0,
+      "tax_rate": 0.0,
+      "tax_amount": 0.0,
+      "total_amount": 163.0
+    }
+  },
+  {
+    "id": "invoice_004",
+    "schema_name": "invoice",
+    "raw_text": "DesignStudio Pro - Invoice #DSP-2024-001. Client: Creative Agency Co. Date issued: 2024-02-01. Logo Design Package: $500.00. Brand Guidelines Document: $250.00. Social Media Kit: $150.00. Subtotal: $900.00. Sales Tax (6%): $54.00. Invoice Total: $954.00. Payment terms: Net 30.",
+    "expected": {
+      "invoice_number": "DSP-2024-001",
+      "invoice_date": "2024-02-01",
+      "vendor_name": "DesignStudio Pro",
+      "customer_name": "Creative Agency Co",
+      "subtotal": 900.0,
+      "tax_rate": 0.06,
+      "tax_amount": 54.0,
+      "total_amount": 954.0
+    }
+  },
+  {
+    "id": "invoice_005",
+    "schema_name": "invoice",
+    "raw_text": "QuickPrint Services | Inv. 78432 | March 30, 2024 | To: Marketing Dept, XYZ Corp | 1000x Business Cards $85 | 500x Flyers $120 | 50x Posters $95 | Subtotal $300 | Tax 7% = $21 | Total $321 | Due: April 30, 2024 | Note: Bulk discount applied",
+    "expected": {
+      "invoice_number": "78432",
+      "invoice_date": "2024-03-30",
+      "due_date": "2024-04-30",
+      "vendor_name": "QuickPrint Services",
+      "customer_name": "XYZ Corp",
+      "subtotal": 300.0,
+      "tax_rate": 0.07,
+      "tax_amount": 21.0,
+      "total_amount": 321.0
+    }
+  },
+  {
+    "id": "survey_001",
+    "schema_name": "survey",
+    "raw_text": "Customer satisfaction survey response received on 2026-02-20 from Alex Johnson (alex.johnson@example.com). Q1 - How would you rate our service? Answer: Excellent. Q2 - How likely are you to recommend us (1-10)? Answer: 9. Q3 - Was your issue resolved? Answer: Yes. Q4 - How long did you wait (minutes)? Answer: 3.5. Q5 - Any additional comments? Answer: Very helpful and friendly support team. Overall satisfaction score: 8.5 out of 10.",
+    "expected": {
+      "respondent_name": "Alex Johnson",
+      "respondent_email": "alex.johnson@example.com",
+      "submission_date": "2026-02-20",
+      "overall_score": 8.5
+    }
+  },
+  {
+    "id": "survey_002",
+    "schema_name": "survey",
+    "raw_text": "Survey submission from Maria Garcia (m.garcia@email.net) on March 1, 2024. Question 1: Product quality rating - 4/5. Question 2: Delivery speed - 5/5. Question 3: Would purchase again - Definitely. Question 4: Price satisfaction - Good value. Overall experience: 9 out of 10.",
+    "expected": {
+      "respondent_name": "Maria Garcia",
+      "respondent_email": "m.garcia@email.net",
+      "submission_date": "2024-03-01",
+      "overall_score": 9.0
+    }
+  },
+  {
+    "id": "survey_003",
+    "schema_name": "survey",
+    "raw_text": "Feedback Form | Submitted: 2024-01-15 | Name: John Chen | Email: jchen@work.com | Q1: How did you hear about us? - Social Media | Q2: Rate your experience (1-10): 7 | Q3: What could we improve? - Faster shipping | Overall Rating: 7/10",
+    "expected": {
+      "respondent_name": "John Chen",
+      "respondent_email": "jchen@work.com",
+      "submission_date": "2024-01-15",
+      "overall_score": 7.0
+    }
+  },
+  {
+    "id": "invoice_006",
+    "schema_name": "invoice",
+    "raw_text": "INVOICE #INV-2024-0042 | From: DataAnalytics Pro | To: Enterprise Solutions Ltd | Date: 2024-06-15 | Due: 2024-07-15 | Consulting Services (40 hrs @ $150/hr): $6,000.00 | Data Processing Fee: $500.00 | Report Generation: $300.00 | Subtotal: $6,800.00 | Tax (9.5%): $646.00 | TOTAL: $7,446.00",
+    "expected": {
+      "invoice_number": "INV-2024-0042",
+      "invoice_date": "2024-06-15",
+      "due_date": "2024-07-15",
+      "vendor_name": "DataAnalytics Pro",
+      "customer_name": "Enterprise Solutions Ltd",
+      "subtotal": 6800.0,
+      "tax_rate": 0.095,
+      "tax_amount": 646.0,
+      "total_amount": 7446.0
+    }
+  },
+  {
+    "id": "invoice_007",
+    "schema_name": "invoice",
+    "raw_text": "MegaMart Wholesale - Invoice 99001. Dated May 5, 2024. Sold to: Corner Store LLC. Items: Case of soda (24 pack) x10 @ $8.99 = $89.90, Snack variety box x5 @ $25.00 = $125.00, Paper towels bulk x3 @ $15.50 = $46.50. Subtotal $261.40. State tax 5.5% = $14.38. Total amount owed: $275.78. Payment due in 14 days.",
+    "expected": {
+      "invoice_number": "99001",
+      "invoice_date": "2024-05-05",
+      "vendor_name": "MegaMart Wholesale",
+      "customer_name": "Corner Store LLC",
+      "subtotal": 261.4,
+      "tax_rate": 0.055,
+      "tax_amount": 14.38,
+      "total_amount": 275.78
+    }
+  }
+]
