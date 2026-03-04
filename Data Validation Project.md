@@ -13,49 +13,46 @@
 - [Follow Ups](#follow-ups)
 - [Correctness, Validation, and Semantics](#correctness-validation-and-semantics)
   - [Why not just use OpenAI function calling or structured outputs?](#why-not-just-use-openai-function-calling-or-structured-outputs)
-  - [How do you guarantee correctness if the LLM is probabilistic?](#how-do-you-guarantee-correctness-if-the-llm-is-probabilistic)
-  - [What’s the biggest weakness of this system?](#whats-the-biggest-weakness-of-this-system)
-  - [Where can this system fail silently?](#where-can-this-system-fail-silently)
-  - [How do you handle hallucinated fields?](#how-do-you-handle-hallucinated-fields)
+  - [correctness if the LLM is probabilistic?](#how-do-you-guarantee-correctness-if-the-llm-is-probabilistic)
+  - [ weakness of this system?](#whats-the-biggest-weakness-of-this-system)
+  - [system fail silently?](#where-can-this-system-fail-silently)
+  - [ handle hallucinated fields?](#how-do-you-handle-hallucinated-fields)
   - [Why Pydantic?](#why-pydantic)
-  - [What if validation logic has a bug?](#what-if-validation-logic-has-a-bug)
-  - [How would you support multiple schemas or document types?](#how-would-you-support-multiple-schemas-or-document-types)
+  - [validation logic has a bug?](#what-if-validation-logic-has-a-bug)
+  - [support multiple schemas or document types?](#how-would-you-support-multiple-schemas-or-document-types)
   - [Why not just fine-tune a model?](#why-not-just-fine-tune-a-model)
-  - [Queue, Reliability, and Failure Recovery](#queue-reliability-and-failure-recovery)
-  - [What if the DB commit succeeds but enqueue fails?](#what-if-the-db-commit-succeeds-but-enqueue-fails)
-  - [What is the Dual-Write Problem?](#what-is-the-dual-write-problem)
+- [Queue, Reliability, and Failure Recovery](#queue-reliability-and-failure-recovery)
+  - [ DB commit succeeds but enqueue fails?](#what-if-the-db-commit-succeeds-but-enqueue-fails)
+  - [Dual-Write Problem?](#what-is-the-dual-write-problem)
   - [Worker Crashes mid-job?](#worker-crashes-mid-job)
   - [Failed Jobs?](#failed-jobs)
-  - [How do you handle partial failures?](#15-how-do-you-handle-partial-failures)
-  - [What happens if Redis goes down?](#16-what-happens-if-redis-goes-down)
-  - [What happens if DB goes down?](#17-what-happens-if-db-goes-down)
+  - [handle partial failures?](#15-how-do-you-handle-partial-failures)
+  - [if Redis goes down?](#16-what-happens-if-redis-goes-down)
+  - [if DB goes down?](#17-what-happens-if-db-goes-down)
 - [API and Client Interaction](#api-and-client-interaction)
-  - [Why REST instead of gRPC?](#why-rest-instead-of-grpc)
-  - [Why polling instead of WebSockets?](#why-polling-instead-of-websockets)
+  - [REST vs gRPC?](#why-rest-instead-of-grpc)
+  - [polling vs WebSockets?](#why-polling-instead-of-websockets)
   - [When would you switch to WebSockets?](#when-would-you-switch-to-websockets)
 - [LLM Layer, Cost, and Throughput](#llm-layer-cost-and-throughput)
-  - [Why semaphore for concurrency?](#why-semaphore-for-concurrency)
-  - [How do you handle LLM timeouts?](#how-do-you-handle-llm-timeouts)
-  - [What happens if model quality drops suddenly?](#what-happens-if-model-quality-drops-suddenly)
-  - [What is the scaling bottleneck and how to improve?](#what-is-the-scaling-bottle-neck-and-how-to-improve)
-  - [Rate Limiting and Distributed Controls](#rate-limiting-and-distributed-controls)
+  - [semaphore for concurrency?](#why-semaphore-for-concurrency)
+  - [handle LLM timeouts?](#how-do-you-handle-llm-timeouts)
+  - [model quality drops suddenly?](#what-happens-if-model-quality-drops-suddenly)
+  - [ scaling bottleneck and how to improve?](#what-is-the-scaling-bottle-neck-and-how-to-improve)
+- [Rate Limiting and Distributed Controls](#rate-limiting-and-distributed-controls)
   - [Why Redis-backed rate limiting and retry budgets?](#why-redis-backed-rate-limiting-and-retry-budgets)
-  - [How do you avoid race conditions in rate limiting?](#how-do-you-avoid-race-conditions-in-rate-limiting)
+  - [avoid race conditions in rate limiting?](#how-do-you-avoid-race-conditions-in-rate-limiting)
 - [Data Layer, Persistence, and Concurrency](#data-layer-persistence-and-concurrency)
   - [Why store every attempt?](#why-store-every-attempt)
-  - [What if DB goes down mid-processing?](#what-if-db-goes-down-mid-processing)
+  - [ DB goes down mid-processing?](#what-if-db-goes-down-mid-processing)
   - [Why async SQLAlchemy?](#why-async-sqlalchemy)
-  - [How do you prevent race conditions on job updates?](#how-do-you-prevent-race-conditions-on-job-updatesisolation-read-commited)
+  - [prevent race conditions on job updates?](#how-do-you-prevent-race-conditions-on-job-updatesisolation-read-commited)
   - [How do you handle concurrent updates?](#how-do-you-handle-concurrent-updates)
 - [Platform Choice and Queueing](#platform-choice-and-queueing)
-  - [Why Redis?](#why-redis)
-  - [How do you handle worker autoscaling?](#how-do-you-handle-worker-autoscaling)
+  - [Why Redis vs kafka?](#why-redis)
+  - [handle worker autoscaling?](#how-do-you-handle-worker-autoscaling)
 - [Scaling and Capacity](#scaling-and-capacity)
   - [Scaling Questions](#scaling-questions)
   - [If this had 10x traffic, what would you change?](#19-if-this-had-10x-traffic-what-would-you-change)
-- [Failure Scenarios Drill](#failure-scenarios-drill)
-  - [Failure Scenarios](#failure-scenarios)
-  - [What if LLM is down?](#what-if-llm-is-down)
 - [Observability and Monitoring](#observability-and-monitoring)
   - [Observability & Monitoring follow-ups](#-10-observability--monitoring)
 - [Priority Lists for Interview Prep](#priority-lists-for-interview-prep)
@@ -597,6 +594,18 @@ For example, when a request arrives, the system performs an atomic increment on 
   Key point: **DB is the source of truth**, so if DB is unavailable we prefer to **pause/slow processing** rather than return partial results.
 
 ### Why async SQLAlchemy?
+
+For persistence, the system uses PostgreSQL with SQLAlchemy’s async ORM. I chose a relational database because the system has well-defined entities like jobs, attempts, and outbox events, and those relationships benefit from structured schemas, constraints, and transactional guarantees.
+
+The job lifecycle — including statuses like pending, extracting, validating, and completed — is naturally modeled with relational tables. Using SQL also lets us enforce data integrity and support the transactional outbox pattern, which requires atomic writes between the job record and the enqueue event.
+
+I used SQLAlchemy’s async engine so database operations wouldn’t block the event loop. Since the API and workers handle many concurrent requests, asynchronous DB access allows the system to process multiple jobs simultaneously without tying up threads during network I/O.
+
+So the combination of PostgreSQL and async SQLAlchemy gave us strong consistency guarantees, structured data modeling, and high concurrency support for the pipeline.
+
+If they ask “Why not NoSQL?”
+
+Because the data model is structured and transactional — jobs, attempts, and outbox events have clear relationships. SQL makes those constraints and joins easier, and it supports atomic transactions which are important for reliability patterns like the transactional outbox.
 
 ### How do you prevent race conditions on job updates?isolation-Read commited
 
