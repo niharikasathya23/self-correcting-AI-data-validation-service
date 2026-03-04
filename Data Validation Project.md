@@ -126,7 +126,7 @@ I also implemented idempotency and content-based deduplication so repeated reque
 
 Once validated, we create a Job record in the database. Instead of pushing directly to Redis, we use a transactional outbox pattern where the Job and an OutboxEvent are written in the same database transaction, and a dispatcher publishes the job to Redis. This avoids the dual-write problem.
 
-Workers pull jobs from Redis and execute the pipeline. We use Redis LMOVE semantics to atomically move jobs from pending to processing. If a worker crashes, a reaper process re-queues stale jobs. That gives us crash recovery and at-least-once delivery, while idempotency ensures effectively-once behavior.
+Workers pull jobs from Redis and execute the pipeline. Jobs are atomically moved from pending to processing, and if a worker crashes, a reaper re-queues stale jobs, providing crash recovery and at-least-once delivery while idempotency ensures effectively-once behavior.
 
 ---
 
@@ -167,11 +167,11 @@ I also support optional fallback models for correction attempts — using a chea
 
 ### **🔹 Observability & Auditability (40–50 seconds)**
 
-Every LLM attempt is stored in an audit table, including the prompt, response, validation results, tokens, and latency. This gives full traceability and replay capability.
+Every LLM attempt is stored in an audit table with the prompt, response, validation results, tokens, and latency, giving full traceability.
 
-The API returns 202 Accepted with a job_id because processing is asynchronous, and clients poll for results.
+The API returns 202 with a job_id because processing is asynchronous and clients poll for results.
 
-We also track metrics like token usage, retry rate, validation failures, and latency. I built an offline evaluation harness to measure pass@1 and pass@k on labeled samples to evaluate prompt and model changes.
+We also track metrics like retry rate, token usage, and latency, and run offline evaluations measuring pass@1 and pass@k on labeled samples.
 
 <a id="results"></a>
 
@@ -225,6 +225,8 @@ Early on, I realized that prompt quality alone isn’t enough. Deterministic val
 I also learned that cost controls is a reliability dimension must be built into the architecture from day one. But without retry caps and global budgets, token usage can grow quickly during degradation scenarios.
 
 Finally, observability changed everything. Metrics like retry rates and tokens per job allowed me to iterate based on data instead of intuition.
+
+Overall, this project taught me how to build reliable AI-powered systems, and that focus on correctness and trust is something I’m excited to bring to Intuit.
 
 <a id="follow-ups"></a>
 
