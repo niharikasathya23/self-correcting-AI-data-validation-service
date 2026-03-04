@@ -1,5 +1,7 @@
 
 
+<a id="top"></a>
+
 # EXPLANATION
 
 ## Table of Contents
@@ -68,6 +70,8 @@
 
 ---
 
+[⬆ Back to Top](#top)
+
 <a id="opening"></a>
 
 ### **Opening (30–40 seconds)**
@@ -78,6 +82,8 @@ In systems like Virufy, upstream data such as patient symptoms and clinician not
 
 ---
 
+[⬆ Back to Top](#top)
+
 <a id="why-not-just-an-llm"></a>
 
 ### **🔹 Why This Needed More Than “Just an LLM” (45 seconds)**
@@ -87,7 +93,7 @@ LLMs are very good at interpreting natural language and mapping it into structur
 In healthcare, we can’t rely on raw model output. I designed an orchestration layer around the model that enforces deterministic validation and controlled retries.
 
 ---
-
+[⬆ Back to Top](#top)
 <a id="high-level-architecture"></a>
 
 ### **🔹 High-Level Architecture (1.5 minutes)**
@@ -101,6 +107,8 @@ Once validated, we create a Job record in the database. Instead of pushing direc
 Workers pull jobs from Redis and execute the pipeline. We use Redis LMOVE semantics to atomically move jobs from pending to processing. If a worker crashes, a reaper process re-queues stale jobs. That gives us crash recovery and at-least-once delivery, while idempotency ensures effectively-once behavior.
 
 ---
+
+[⬆ Back to Top](#top)
 
 <a id="core-orchestration-logic"></a>
 
@@ -119,6 +127,8 @@ This self-correction loop significantly improves accuracy while maintaining dete
 
 ---
 
+[⬆ Back to Top](#top)
+
 <a id="reliability-and-cost-guardrails"></a>
 
 ### **🔹 Reliability & Cost Guardrails (1 minute)**
@@ -128,6 +138,8 @@ Because retries increase latency and cost, I added guardrails. Each job has a re
 I also support optional fallback models for correction attempts — using a cheaper model after the first extraction to balance quality and cost.
 
 ---
+
+[⬆ Back to Top](#top)
 
 <a id="observability-and-auditability"></a>
 
@@ -156,6 +168,8 @@ Most importantly, downstream systems only consumed validated structured data, pr
 
 ---
 
+[⬆ Back to Top](#top)
+
 <a id="tradeoffs"></a>
 
 ### 🔹 Tradeoffs (≈60–70 seconds)
@@ -175,6 +189,8 @@ Third, API simplicity versus client complexity.
 I chose an asynchronous job-based API with polling. This keeps the backend resilient for long-running LLM workflows, but clients must poll for results.
 
 ---
+
+[⬆ Back to Top](#top)
 
 <a id="learnings"></a>
 
@@ -207,7 +223,7 @@ For example, a response can include all required fields but still contain incorr
 Function calling addresses structural validity. My validation layer enforces domain integrity.
 
 In healthcare workflows, downstream systems depend on data that is not just well-structured, but trustworthy. Deterministic validation ensures the output satisfies business rules before it is consumed.
-
+[⬆ Back to Top](#top)
 ### How do you guarantee correctness if the LLM is probabilistic?”
 
 I don’t guarantee that the LLM is correct.  
@@ -218,7 +234,7 @@ The model generates a candidate structured output, but that output is always pas
 If validation fails, the system either corrects the output through a structured retry loop or marks the job as failed. Downstream systems never consume raw model output.
 
 So the correctness guarantee doesn’t come from the model — it comes from the validation boundary around it.
-
+[⬆ Back to Top](#top)
 ### “What’s the biggest weakness of this system?”
 
 The biggest weakness is that correctness is bounded by the validation rules we define.
@@ -242,7 +258,7 @@ Second is **model drift or quality degradation**. If the model starts producing 
 Third is **schema evolution issues**. If the schema changes but older jobs or clients still use the previous version, mismatches could cause incorrect interpretation of fields without immediately failing.
 
 Fourth is **queue recovery edge cases**. If the reaper logic incorrectly requeues a job that actually finished but didn’t update status yet, the job could run twice. Application-level idempotency protects the final result, but it could still waste compute.l
-
+[⬆ Back to Top](#top)
 ### How do you handle hallucinated fields?
 
 Schema validation – Model output must match a predefined schema (e.g., using Pydantic). Invalid or unexpected fields are rejected.
@@ -254,6 +270,8 @@ Correction loop – If validation fails, the model receives the errors and is as
 Retry limits – A retry budget prevents infinite correction attempts.
 
 Fallback handling – If corrections keep failing, the system flags the job or sends it for manual review
+
+[⬆ Back to Top](#top)
 
 ### Why Pydantic?
 
@@ -272,6 +290,8 @@ It automatically enforces:
 Those structured errors are especially useful because they can be passed back to the model in the **correction loop** to guide fixes.
 
 So Pydantic gives both **strict validation and machine-readable error feedback**.
+
+[⬆ Back to Top](#top)
 
 ### What if validation logic has a bug?
 
@@ -308,7 +328,7 @@ Because the orchestration logic — extract → validate → correct → finaliz
 3. Creating the associated prompt template
 
 This makes the system **extensible without changing the pipeline itself**.
-
+[⬆ Back to Top](#top)
 ### “Why not just fine-tune a model?”
 
 Fine-tuning can improve extraction quality, but it doesn’t eliminate the need for deterministic validation.
@@ -329,6 +349,8 @@ My design treats the LLM as a probabilistic component and enforces correctness t
 
 That said, fine-tuning could be used later to **improve first-pass accuracy and reduce correction loops**, but it would complement this architecture rather than replace it.
 
+[⬆ Back to Top](#top)
+
 <a id="queue-reliability-and-failure-recovery"></a>
 
 ## Queue, Reliability, and Failure Recovery
@@ -346,6 +368,8 @@ If the transaction commits, both records exist in the database. The enqueue oper
 So even if the Redis enqueue fails temporarily — for example due to network issues — the outbox record still exists in the database. The dispatcher will retry until the job is successfully pushed to the queue.
 
 This guarantees that **a committed job will eventually be enqueued**.
+
+[⬆ Back to Top](#top)
 
 ### What is the Dual-Write Problem?
 
@@ -365,6 +389,8 @@ At the application level, we enforce idempotency. The job has a unique ID in the
 
 So a crash causes a retry — not data loss — and downstream systems still only see validated output.
 
+[⬆ Back to Top](#top)
+
 **BLPOP simply removes a job from the queue and gives it to the worker. If the worker crashes after popping but before completing the job, that job is lost because it’s no longer in Redis.**
 
 **LMOVE, on the other hand, atomically moves the job from a “pending” list to a “processing” list in a single operation.** That means the job always exists in Redis — it’s either pending or being processed. If the worker crashes mid-execution, the job remains in the processing list and a reaper can move it back to pending for retry.
@@ -376,7 +402,7 @@ Failed jobs are captured through a **dead-letter mechanism**. When a job exceeds
 To replay a failed job, the system exposes an operational endpoint or internal tool that retrieves the failed job record, resets its status to `PENDING`, and pushes the job ID back into the queue for reprocessing.
 
 Because every job stores the **original input and the full attempt history**, we can replay it deterministically with the same data or after making improvements, such as updating prompts or validation rules.
-
+[⬆ Back to Top](#top)
 ### **15️⃣ “How do you handle partial failures?”**
 
 * Job status transitions
@@ -424,7 +450,7 @@ I chose REST primarily for interoperability and simplicity. This service is inte
 Since the API mainly handles job submission and result retrieval, the performance benefits of gRPC weren’t critical. The payload sizes are small and the interaction pattern is request–response.
 
 gRPC would make more sense if we had **high-frequency internal service-to-service communication** or needed **streaming responses**. But for an external-facing API where ease of integration matters, REST is the more practical choice.
-
+[⬆ Back to Top](#top)
 ### “Why polling instead of WebSockets?”
 
 I chose polling mainly because the workflow is job-based and completion times are unpredictable. The client submits a request, receives a `job_id`, and checks the status periodically. Polling keeps the API stateless and easy to scale behind load balancers without maintaining long-lived connections.
@@ -432,7 +458,7 @@ I chose polling mainly because the workflow is job-based and completion times ar
 WebSockets would require managing persistent connections, handling reconnections, and coordinating state across multiple API instances. For workloads where completion events are relatively infrequent, that added complexity usually isn’t justified.
 
 Polling also works well with simple backoff strategies so clients don’t overwhelm the API.
-
+[⬆ Back to Top](#top)
 ### “When would you switch to WebSockets?”
 
 I would switch if **real-time responsiveness becomes important** or if **clients need immediate push notifications** when jobs complete.
@@ -456,7 +482,7 @@ In those cases, WebSockets or server-sent events would reduce unnecessary pollin
 ### Why semaphore for concurrency?
 
 A semaphore limits how many operations can run concurrently. I use it to cap the number of simultaneous LLM calls so we don’t exceed provider rate limits or overwhelm the external API.
-
+[⬆ Back to Top](#top)
 ### How do you handle LLM timeouts?
 
 ###  “What happens if model quality drops suddenly?”
@@ -472,6 +498,8 @@ First, the **global retry budget acts as a circuit breaker**. If the model start
 Second, we can **switch to a fallback model or provider** through the provider abstraction layer.
 
 Third, we can **roll back prompt versions**, since prompts are versioned and evaluated offline through the evaluation harness.
+
+[⬆ Back to Top](#top)
 
 ### What is the scaling bottle neck and how to improve?
 
@@ -539,6 +567,8 @@ Race conditions are avoided by using **Redis atomic operations**.
 
 For example, when a request arrives, the system performs an atomic increment on the counter associated with the API key and checks whether the value exceeds the allowed limit. Because the increment and read are handled atomically by Redis, concurrent requests cannot bypass the limit.
 
+[⬆ Back to Top](#top)
+
 <a id="data-layer-persistence-and-concurrency"></a>
 
 ## Data Layer, Persistence, and Concurrency
@@ -552,6 +582,8 @@ For example, when a request arrives, the system performs an atomic increment on 
 **Replay \+ iteration:** after improving prompts/rules, we can replay failed jobs and compare attempts.
 
 **Metrics:** tokens/latency per attempt helps cost \+ performance tuning.
+
+[⬆ Back to Top](#top)
 
 ### What if DB goes down mid-processing?
 
@@ -593,6 +625,8 @@ Main strategy: **design so concurrency doesn’t happen**, and guard the edges.
 
   * use **atomic/conditional DB updates** or `FOR UPDATE` to ensure only one worker transitions to COMPLETED.
 
+[⬆ Back to Top](#top)
+
 <a id="platform-choice-and-queueing"></a>
 
 ## Platform Choice and Queueing
@@ -602,6 +636,10 @@ Main strategy: **design so concurrency doesn’t happen**, and guard the edges.
 I chose Redis mainly because it provides **fast, simple, in-memory data structures that work well for building lightweight distributed queues**.
 
 In this system the queue only needs to handle **job IDs and state transitions**, so Redis lists are sufficient and extremely fast. Using Redis also allows multiple workers to pull jobs concurrently with very low latency.
+
+[⬆ Back to Top](#top)
+
+[⬆ Back to Top](#top)
 
 Another reason is **reliable queue semantics**. Redis supports operations like `LMOVE`, which atomically moves jobs from a *pending* list to a *processing* list. That makes it possible to implement crash recovery — if a worker fails mid-job, the job can be re-queued safely.
 
@@ -618,6 +656,8 @@ Kafka is optimized for high-throughput event streaming and durable logs. Our wor
 ### How do you handle worker autoscaling?
 
 Worker autoscaling is based on queue backlog and latency metrics. When the pending queue grows, we add more worker instances; when it shrinks, we scale down. Since workers are stateless, horizontal scaling is straightforward, though we still enforce concurrency limits to respect LLM provider rate limits.
+
+[⬆ Back to Top](#top)
 
 <a id="scaling-and-capacity"></a>
 
@@ -673,6 +713,8 @@ They are testing:
 
 Production readiness and maturity.
 
+[⬆ Back to Top](#top)
+
 <a id="priority-lists-for-interview-prep"></a>
 
 ### 🔥 Tier 1 — Highest Probability (You MUST be ready)
@@ -718,6 +760,8 @@ Production readiness and maturity.
 * Retry rate
 
 * Token usage trends
+
+[⬆ Back to Top](#top)
 
 <a id="behavioral-follow-ups-do-not-ignore"></a>
 
@@ -775,7 +819,7 @@ Turn the Streamlit dashboard into a multi-tenant admin console: job search, repl
 Add webhook / SSE callbacks as an alternative to polling for higher-end integrations.
 
 Provide a schema registry + versioning story so clients can evolve schemas safely.
-
+[⬆ Back to Top](#top)
 ### **22️⃣ “What mistake did you make?”**
 
 * Initial naive queue without atomic move
@@ -822,7 +866,7 @@ I’m particularly proud of this project because it wasn’t something assigned 
 Instead of just trying to improve prompts, I realized the system needed guardrails around the model. So I took the initiative to design a pipeline where the model’s output is deterministically validated, and if something is wrong, the system feeds structured validation errors back to the model to correct only the problematic fields.
 
 Over time, I expanded the system with reliability features like idempotency, retry limits, and evaluation tooling so we could measure accuracy and control cost. What I’m proud of is that it started from observing a practical pain point and evolved into a complete engineering solution that made the AI pipeline much more reliable and production-ready.
-
+[⬆ Back to Top](#top)
 
 # Technologies Used in the Flow (Updated)
 
@@ -839,6 +883,8 @@ Over time, I expanded the system with reliability features like idempotency, ret
 * Eval: Async evaluation harness with pass@k and field-level accuracy, driven against labeled samples
 
 ---
+
+[⬆ Back to Top](#top)
 
 **Full System Flow (What Happens Internally – Updated)**
 
@@ -944,3 +990,5 @@ Over time, I expanded the system with reliability features like idempotency, ret
     * Clients can implement smarter polling based on retry\_after\_seconds instead of hammering the API.
 
 ---
+
+[⬆ Back to Top](#top)
