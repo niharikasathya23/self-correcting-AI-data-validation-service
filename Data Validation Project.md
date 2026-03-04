@@ -18,6 +18,7 @@
   - [system fail silently?](#where-can-this-system-fail-silently)
   - [ handle hallucinated fields?](#how-do-you-handle-hallucinated-fields)
   - [Why Pydantic?](#why-pydantic)
+  - [Why LanGraph?](#why-langraph)
   - [validation logic has a bug?](#what-if-validation-logic-has-a-bug)
   - [support multiple schemas or document types?](#how-would-you-support-multiple-schemas-or-document-types)
   - [Why not just fine-tune a model?](#why-not-just-fine-tune-a-model)
@@ -61,7 +62,9 @@
   - [Tier 4 — Distributed Systems Follow Ups](#-tier-4--distributed-systems-follow-ups)
 - [Behavioral Follow Ups (Do Not Ignore)](#behavioral-follow-ups-do-not-ignore)
   - [What trade-offs did you make?](#21-what-trade-offs-did-you-make)
+  - [What Improvements would you make?](#what-improvemnts-would-you-make)
   - [What mistake did you make?](#22-what-mistake-did-you-make)
+  - [Rebuild Differently](#rebuild-differently)
   - [What was the hardest design decision?](#23-what-was-the-hardest-design-decision)
   - [Why are you proud of this?](#24-why-are-you-proud-of-this)
 
@@ -71,7 +74,29 @@
 
 <a id="opening"></a>
 
+### **INTRO**
+
+At Virufy, I work on an AI-powered healthcare screening platform.
+On the backend, I build FastAPI services that handle large audio uploads, process and validate data, and manage state in PostgreSQL.
+
+I also deploy services on AWS using Docker, Lambda, and ECS, and help resolve production issues.
+
+Recently, I integrated GenAI to automate triage, which helped reduce manual review.
+
+
+“Earlier, during my Master’s at CU Boulder, I built Bilateral Segmentation and Disparity Refinement (BSDR),real-time dense
+spatial perception in low-SWaP robots, achieving 11 FPS and improving occlusions and object recognition through
+
+interactive React and Flask dashboards that visualized live perception outputs and system health to help teams debug and tune models in real time
+
+Before that, at Rakuten, I worked on a order management B2B platform, building customer-facing UI features using TypeScript and Angular collaborating closely with product and QA. and iterating quickly in a production environment.
+
+Across these experiences, a few principles guide how I work. I care a lot about ownership and integrity in building systems, focusing on solving real customer problems, and to continuously learning new technologies as systems evolve.
+
+I’m excited about Intuit’s mission of powering prosperity and building products like TurboTax and QuickBooks that help millions of people make better financial decisions. This role also aligns well with my experience building backend services and AI-driven systems, and I’m excited about applying those skills to large-scale platforms that have real user impact.
+
 ### **Opening (30–40 seconds)**
+
 
 The project is a self-correcting AI data validation service that converts unstructured healthcare input into validated, schema-safe structured data using an LLM with deterministic guardrails.
 
@@ -287,6 +312,19 @@ It automatically enforces:
 Those structured errors are especially useful because they can be passed back to the model in the **correction loop** to guide fixes.
 
 So Pydantic gives both **strict validation and machine-readable error feedback**.
+
+## **Why LanGraph?**
+
+LangGraph is a framework for building state-machine-based workflows around LLM applications. Instead of writing a linear chain of calls, it lets you define nodes representing steps in the pipeline and edges that control how the system transitions between them.
+
+In my system, the workflow naturally fits that model: we extract structured data, validate it, and if validation fails we enter a correction step before finalizing the result. That kind of conditional looping is much easier to represent as a state machine than with nested retry logic.
+
+f I implemented this with regular Python code, it would quickly turn into nested retry loops and complex conditional logic, which becomes harder to maintain and reason about as the pipeline grows.
+
+I chose LangGraph because it keeps the orchestration explicit and modular, which makes the pipeline easier to extend and debug.
+
+Compared to heavier orchestration tools like Airflow or Temporal, LangGraph is lightweight and designed specifically for LLM-driven application workflows rather than large data pipelines.
+
 
 [⬆ Back to Top](#top)
 
@@ -788,6 +826,8 @@ Intuit loves this part.
 
 * Retry caps vs higher recall
 
+<a id="what-improvemnts-would-you-make"></a>
+
 ### **What Improvemnts would you make**
 
 1) Improve extraction quality
@@ -843,6 +883,8 @@ Fixing that forced me to redesign around the transactional outbox + dispatcher +
 I also made validation too strict too early. The first version of the validator encoded lots of tight rules and formatting expectations. That gave strong guarantees, but in practice it caused many “good enough” outputs to fail, especially for edge‑case invoices and noisy text. The correction loop kept firing on minor issues, which hurt latency and made overall pass rates look worse than they needed to be.
 
 I fixed this by prioritizing critical invariants first (schema correctness, math consistency, key fields), and relaxing or normalizing cosmetic issues (for example, currency symbols, minor whitespace, some optional fields). I also added better normalization before validation. That balance kept the strong guarantees where they matter, while reducing unnecessary retries and improving pass@1 and latency.
+
+<a id="rebuild-differently"></a>
 
 ### **Rebuild Differently**
 
