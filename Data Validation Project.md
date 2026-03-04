@@ -100,23 +100,16 @@ I’m excited about Intuit’s mission of powering prosperity and building produ
 
 The project is a self-correcting AI data validation service that converts unstructured healthcare input into validated, schema-safe structured data using an LLM with deterministic guardrails.
 
-In systems like Virufy, upstream data such as patient symptoms and clinician notes is unstructured, while downstream systems like triage engines and training pipelines require deterministic fields. That mismatch was the core problem I wanted to solve.
+In systems like Virufy, upstream data such as patient symptom descriptions and clinician notes is unstructured. However, downstream systems like triage engines and training pipelines require deterministic structured fields.
 
-My approach was to use the LLM for interpretation but surround it with deterministic guardrails. The model generates structured JSON, which is validated against schemas and business rules, and if validation fails the system automatically enters a correction loop to fix the invalid fields.
+The problem is that LLM outputs are probabilistic — they may miss fields, return malformed JSON, or produce logically inconsistent values. In healthcare workflows we can’t rely on raw model output.
+
+To solve this, I designed an orchestration layer around the LLM where the model generates structured JSON, but the output is deterministically validated. If validation fails, the system automatically enters a correction loop to fix the invalid fields.
 
 
 ---
 
 [⬆ Back to Top](#top)
-
-<a id="why-not-just-an-llm"></a>
-
-### **🔹 Why This Needed More Than “Just an LLM” (45 seconds)**
-
-LLMs are very good at interpreting natural language into structured JSON, but they’re probabilistic. They can miss fields, return malformed JSON, or produce inconsistent values.
-
-In healthcare workflows we can’t rely on raw model output, so I designed an orchestration layer that enforces deterministic validation and controlled retries.
-
 ---
 [⬆ Back to Top](#top)
 <a id="high-level-architecture"></a>
