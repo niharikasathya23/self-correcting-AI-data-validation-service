@@ -194,18 +194,11 @@ Most importantly, downstream systems only consumed validated structured data, pr
 
 There were important tradeoffs.
 
-First, accuracy versus latency and cost. 
+First, accuracy versus latency and cost. The self-correction loop improves structured reliability, but it increases latency and token usage. I controlled that using bounded retries, retry budgets, and fallback models.
 
-I implemented a self-correction loop where the LLM output is validated against strict schemas and retried if validation fails. This improves structured data reliability, but it increases latency and token usage. To control that, I added bounded retries, retry budgets, and fallback models so worst-case cost remains predictable.
+Second, reliability versus system complexity. I used a transactional outbox instead of pushing jobs directly to Redis to prevent lost jobs, even though it adds components like a dispatcher.
 
-Second, reliability versus system complexity. I
-
-Instead of pushing jobs directly to Redis, I used a transactional outbox pattern. This ensures the job is never lost if a failure occurs between the database write and queue enqueue, though it adds extra components like a dispatcher.
-
-Third, API simplicity versus client complexity.
-
-I chose an asynchronous job-based API with polling. This keeps the backend resilient for long-running LLM workflows, but clients must poll for results.
-
+Third, API simplicity versus client complexity. I chose an asynchronous job-based API with polling to keep the backend resilient for long-running LLM workflows.
 ---
 
 [⬆ Back to Top](#top)
